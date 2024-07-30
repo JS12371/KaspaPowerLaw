@@ -166,7 +166,7 @@ st.title("Power Law Analysis")
 
 # Sidebar settings
 st.sidebar.header("Settings")
-asset_selection = st.sidebar.selectbox("Select Asset", ["KAS-USD", "KAS / BTC"])
+asset_selection = st.sidebar.selectbox("Select Asset", ["KAS-USD"])
 graph_type = st.sidebar.radio("Select Graph Type", ('Log-Log', 'Log-Linear'))
 
 # Fetch data and set parameters based on selection
