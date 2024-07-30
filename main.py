@@ -12,7 +12,7 @@ FAIR_SLOPE = 4.231517555680599
 FAIR_INTERCEPT = -30.619674611147577
 STD_DEV = 0.40220538718586324
 GENESIS_DATE = datetime(2021, 11, 7)
-END_DATE = datetime(2024, 7, 28)
+END_DATE = datetime(2034, 7, 28)
 
 # Function to fetch data from Yahoo Finance
 def fetch_data(ticker, start_date, end_date):
