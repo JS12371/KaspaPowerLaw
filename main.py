@@ -10,11 +10,15 @@ from sklearn.metrics import r2_score
 # Constants for the regression
 FAIR_SLOPE_KAS = 4.231517555680599
 FAIR_INTERCEPT_KAS = -30.619674611147577
-STD_DEV_KAS = 0.40220538718586324
+NUM_DEV_KAS = 0.5147550936306959
+STD_DEV_KAS = 0.40220538718586324 * NUM_DEV_KAS
+STD_DEV_KAS = NUM_DEV_KAS
 
 FAIR_SLOPE_BTC = 3.3772158144455005
 FAIR_INTERCEPT_BTC = -35.58040433943374
-STD_DEV_BTC = 0.4997272083220097 *1.5
+NUM_DEV_BTC = 0.6401846513603376
+STD_DEV_BTC = 0.4997272083220097 * NUM_DEV_BTC
+STD_DEV_BTC = NUM_DEV_BTC
 
 GENESIS_DATE = datetime(2021, 11, 7)
 END_DATE = datetime(2034, 11, 1)
@@ -166,7 +170,7 @@ st.title("Power Law Analysis")
 
 # Sidebar settings
 st.sidebar.header("Settings")
-asset_selection = st.sidebar.selectbox("Select Asset", ["KAS-USD"])
+asset_selection = st.sidebar.selectbox("Select Asset", ["KAS-USD", "KAS / BTC"])
 graph_type = st.sidebar.radio("Select Graph Type", ('Log-Log', 'Log-Linear'))
 
 # Fetch data and set parameters based on selection
