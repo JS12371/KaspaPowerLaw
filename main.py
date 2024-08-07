@@ -12,15 +12,13 @@ FAIR_SLOPE_KAS = 4.231517555680599
 FAIR_INTERCEPT_KAS = -30.619674611147577
 NUM_DEV_KAS = 0.5147550936306959
 STD_DEV_KAS = 0.40220538718586324
-STD_DEV_KAS = NUM_DEV_KAS
-
+STD_LOWER_KAS = 0.3923534810808362
+STD_UPPER_KAS = 0.57791542970557
 
 FAIR_SLOPE_BTC = 3.3772158144455005
 FAIR_INTERCEPT_BTC = -35.58040433943374
 NUM_DEV_BTC = 0.6401846513603376
 STD_DEV_BTC = 0.4997272083220097
-STD_DEV_BTC = NUM_DEV_BTC
-
 
 GENESIS_DATE = datetime(2021, 11, 7)
 END_DATE = datetime(2034, 11, 1)
@@ -31,7 +29,7 @@ def fetch_data(ticker, GENESIS_DATE, END_DATE):
     return data
 
 # Function to plot results with heatmap and dates on x-axis using Plotly
-def plot_results(data, fair_slope, fair_intercept, std_dev):
+def plot_results(data, fair_slope, fair_intercept, std_lower, std_upper):
     data['Days Since Genesis'] = (data.index - GENESIS_DATE).days
     dates = data.index
     prices = data['Close'].values
@@ -47,8 +45,8 @@ def plot_results(data, fair_slope, fair_intercept, std_dev):
 
     # Calculate the regression lines
     regression_line = np.exp(fair_intercept) * all_days ** fair_slope
-    support_line = np.exp(fair_intercept - std_dev) * all_days ** fair_slope
-    resistance_line = np.exp(fair_intercept + std_dev) * all_days ** fair_slope
+    support_line = np.exp(fair_intercept - std_lower) * all_days ** fair_slope
+    resistance_line = np.exp(fair_intercept + std_upper) * all_days ** fair_slope
 
     # Calculate percent deviations and percentiles
     percent_deviation = (prices - np.exp(fair_intercept) * days ** fair_slope) / (np.exp(fair_intercept) * days ** fair_slope) * 100
@@ -90,7 +88,7 @@ def plot_results(data, fair_slope, fair_intercept, std_dev):
     return percentileNow
 
 # Function to plot log-log graph with regression and bands using Plotly
-def plot_log_log(data, fair_slope, fair_intercept, std_dev):
+def plot_log_log(data, fair_slope, fair_intercept, std_lower, std_upper):
     data['Days Since Genesis'] = (data.index - GENESIS_DATE).days
     days = data['Days Since Genesis'].values
     prices = data['Close'].values
@@ -108,12 +106,8 @@ def plot_log_log(data, fair_slope, fair_intercept, std_dev):
 
     # Calculate the regression lines
     regression_line = np.exp(fair_intercept) * all_days ** fair_slope
-    support_line = np.exp(fair_intercept - std_dev) * all_days ** fair_slope
-    resistance_line = np.exp(fair_intercept + std_dev) * all_days ** fair_slope
-
-    # Calculate percent deviations and percentiles
-    percent_deviation = (prices - np.exp(fair_intercept) * days ** fair_slope) / (np.exp(fair_intercept) * days ** fair_slope) * 100
-    percentiles = pd.qcut(percent_deviation, 100, labels=False)
+    support_line = np.exp(fair_intercept - std_lower) * all_days ** fair_slope
+    resistance_line = np.exp(fair_intercept + std_upper) * all_days ** fair_slope
 
     fig = go.Figure()
 
@@ -159,11 +153,11 @@ def plot_log_log(data, fair_slope, fair_intercept, std_dev):
     return percentileNow
 
 # Function to calculate predicted values for a given date
-def calculate_predicted_values(target_date, fair_slope, fair_intercept, std_dev):
+def calculate_predicted_values(target_date, fair_slope, fair_intercept, std_lower, std_upper):
     days_since_genesis = (pd.to_datetime(target_date) - GENESIS_DATE).days
     fair_value = np.exp(fair_intercept) * days_since_genesis ** fair_slope
-    support_value = np.exp(fair_intercept - std_dev) * days_since_genesis ** fair_slope
-    resistance_value = np.exp(fair_intercept + std_dev) * days_since_genesis ** fair_slope
+    support_value = np.exp(fair_intercept - std_lower) * days_since_genesis ** fair_slope
+    resistance_value = np.exp(fair_intercept + std_upper) * days_since_genesis ** fair_slope
     return fair_value, support_value, resistance_value
 
 # Streamlit App
@@ -180,7 +174,8 @@ if asset_selection == "KAS-USD":
     ticker = 'KAS-USD'
     fair_slope = FAIR_SLOPE_KAS
     fair_intercept = FAIR_INTERCEPT_KAS
-    std_dev = STD_DEV_KAS
+    std_lower = STD_LOWER_KAS
+    std_upper = STD_UPPER_KAS
     data = fetch_data(ticker, GENESIS_DATE, END_DATE)
 elif asset_selection == "KAS / BTC":
     kas_data = fetch_data('KAS-USD', GENESIS_DATE, END_DATE)
@@ -189,7 +184,8 @@ elif asset_selection == "KAS / BTC":
     data['Close'] = kas_data['Close'] / btc_data['Close']
     fair_slope = FAIR_SLOPE_BTC
     fair_intercept = FAIR_INTERCEPT_BTC
-    std_dev = STD_DEV_BTC
+    std_lower = STD_DEV_BTC
+    std_upper = STD_DEV_BTC
 
 if not data.empty:
     # Log-transform the data
@@ -206,9 +202,9 @@ if not data.empty:
     r_squared = r2_score(log_prices, log_predicted_prices)
     
     if graph_type == 'Log-Linear':
-        percentileNow = plot_results(data, fair_slope, fair_intercept, std_dev)
+        percentileNow = plot_results(data, fair_slope, fair_intercept, std_lower, std_upper)
     elif graph_type == 'Log-Log':
-        percentileNow = plot_log_log(data, fair_slope, fair_intercept, std_dev)
+        percentileNow = plot_log_log(data, fair_slope, fair_intercept, std_lower, std_upper)
 
     st.write("### Regression Stats")
     data_dict = {
@@ -228,7 +224,7 @@ if not data.empty:
     target_date = st.sidebar.date_input("Select a date for prediction", value=datetime.now())
     
     if st.sidebar.button("Calculate Predicted Values"):
-        fair_value, support_value, resistance_value = calculate_predicted_values(target_date, fair_slope, fair_intercept, std_dev)
+        fair_value, support_value, resistance_value = calculate_predicted_values(target_date, fair_slope, fair_intercept, std_lower, std_upper)
         
         prediction_data_dict = {
             "Date": [target_date],
