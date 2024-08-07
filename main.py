@@ -19,6 +19,8 @@ FAIR_SLOPE_BTC = 3.3772158144455005
 FAIR_INTERCEPT_BTC = -35.58040433943374
 NUM_DEV_BTC = 0.6401846513603376
 STD_DEV_BTC = 0.4997272083220097
+STD_LOWER_BTC = 0.5967259000081381
+STD_UPPER_BTC = 0.6561258085869963
 
 GENESIS_DATE = datetime(2021, 11, 7)
 END_DATE = datetime(2034, 11, 1)
@@ -184,8 +186,8 @@ elif asset_selection == "KAS / BTC":
     data['Close'] = kas_data['Close'] / btc_data['Close']
     fair_slope = FAIR_SLOPE_BTC
     fair_intercept = FAIR_INTERCEPT_BTC
-    std_lower = STD_DEV_BTC
-    std_upper = STD_DEV_BTC
+    std_lower = STD_LOWER_BTC
+    std_upper = STD_UPPER_BTC
 
 if not data.empty:
     # Log-transform the data
